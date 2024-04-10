@@ -165,9 +165,9 @@ cython_debug/
 # environment variables
 .env
 
-# imported data
+# imported/saved data
 cache/
-
+data/
 
 
 # ----- MacOS
