@@ -18,26 +18,46 @@ application_id = os.getenv("TRAVELTIME_APPLICATION_ID")
 # set data save location
 settings.data_folder = "data"
 
-# check if the data is already downloaded
-if not os.path.exists("data/city.shp") or not os.path.exists("data/graph.graphml"):
-    # get the polygon for Parramatta, NSW
-    city = ox.geocode_to_gdf("Sydney, NSW, Australia")
-    polygon = city["geometry"].iloc[0]
+# filepaths
+network_path = os.path.join(settings.data_folder, "network.graphml")
+boundary_path = os.path.join(settings.data_folder, "boundary.gpkg")
 
-    # get the street network within the polygon
-    G = ox.graph_from_polygon(polygon, network_type="walk")
+if not os.path.exists(network_path) or not os.path.exists(boundary_path):
+    print("Downloading network and boundary data...")
 
-    # save the GeoDataFrame to a shapefile
-    city.to_file("data/city.shp")
+    # get place boundaries and road network
+    place = "Sydney, NSW, Australia"
+    gdf = ox.geocode_to_gdf(place)
 
-    # save the Graph to a GraphML file
-    ox.save_graphml(G, filepath="data/graph.graphml")
+    G = ox.graph_from_place(place, network_type="walk", retain_all=True)
+
+    # save to disk
+    ox.save_graphml(G, filepath=network_path)
+    gdf.to_file(boundary_path, driver="GPKG")
 else:
-    # load the data from the files
-    city = gpd.read_file("data/city.shp")
-    G = ox.load_graphml("data/graph.graphml")
+    print("Loading data from disk...")
+    G = ox.load_graphml(network_path)
+    gdf = gpd.read_file(boundary_path)
 
-# display the objects
-fig, ax = ox.plot_graph(G, bgcolor="white", show=False, close=False)
-city.plot(ax=ax, facecolor="none", edgecolor="lightgrey")
+# plot the network, but do not show it or close it yet
+fig, ax = ox.plot_graph(
+    G,
+    show=False,
+    close=False,
+    bgcolor="#333333",
+    edge_color="w",
+    edge_linewidth=0.3,
+    node_size=0,
+)
+
+# to this matplotlib axis, add the place shape(s)
+gdf.plot(ax=ax, fc="k", ec="#666666", lw=1, alpha=1, zorder=-1)
+
+# optionally set up the axes extents
+# margin = 0.02
+# west, south, east, north = gdf.unary_union.bounds
+# margin_ns = (north - south) * margin
+# margin_ew = (east - west) * margin
+# ax.set_ylim((south - margin_ns, north + margin_ns))
+# ax.set_xlim((west - margin_ew, east + margin_ew))
 plt.show()
