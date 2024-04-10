@@ -18,27 +18,75 @@ application_id = os.getenv("TRAVELTIME_APPLICATION_ID")
 # set data save location
 settings.data_folder = "data"
 
-# filepaths
-network_path = os.path.join(settings.data_folder, "network.graphml")
-boundary_path = os.path.join(settings.data_folder, "boundary.gpkg")
+# define options
+place = "Sydney, NSW, Australia"
+tiles = "cartodbdarkmatter"
+mk = {"radius": 6}
 
-if not os.path.exists(network_path) or not os.path.exists(boundary_path):
-    print("Downloading network and boundary data...")
+import os
+import osmnx as ox
+from osmnx import settings
+import geopandas as gpd
 
-    # get place boundaries and road network
-    place = "Sydney, NSW, Australia"
-    gdf = ox.geocode_to_gdf(place)
+# DataHandler class that takes care of downloading, saving, and loading the data.
+# The save and load methods check the file extension and use the appropriate function to save or load the data.
+# The handle method checks if the file exists.
+#   If it does, it loads the data from the file.
+#   If it doesn't, it downloads the data and saves it to the file.
+class DataHandler:
+    def __init__(self, name, download_func):
+        self.name = name
+        self.download_func = download_func
+        self.filepath = os.path.join(settings.data_folder, name)
 
-    G = ox.graph_from_place(place, network_type="walk", retain_all=True)
+    def handle(self):
+        if not os.path.exists(self.filepath):
+            print(f"Downloading {self.name}...")
+            data = self.download_func()
+            self.save(data)
+        else:
+            print(f"Loading {self.name} from disk...")
+            data = self.load()
+        return data
 
-    # save to disk
-    ox.save_graphml(G, filepath=network_path)
-    gdf.to_file(boundary_path, driver="GPKG")
-else:
-    print("Loading data from disk...")
-    G = ox.load_graphml(network_path)
-    gdf = gpd.read_file(boundary_path)
+    def save(self, data):
+        if self.name.endswith('.gpkg'):
+            data.to_file(self.filepath, driver="GPKG")
+        elif self.name.endswith('.graphml'):
+            ox.save_graphml(data, filepath=self.filepath)
 
+    def load(self):
+        if self.name.endswith('.gpkg'):
+            return gpd.read_file(self.filepath)
+        elif self.name.endswith('.graphml'):
+            return ox.load_graphml(self.filepath)
+
+# Define the data handlers
+data_handlers = [
+    DataHandler(
+        "roads.graphml",
+        download_func=lambda: ox.graph_from_place(place, network_type="walk", retain_all=True)
+    ),
+    DataHandler(
+        "boundary.gpkg",
+        download_func=lambda: ox.geocode_to_gdf(place)
+    ),
+    DataHandler(
+        "rail.gpkg",
+        download_func=lambda: ox.features_from_place(place, tags={"railway": "light_rail"})
+    )
+]
+
+# Handle the data
+for handler in data_handlers:
+    data = handler.handle()
+    if handler.name == "roads.graphml":
+        G = data
+    elif handler.name == "boundary.gpkg":
+        boundary = data
+    elif handler.name == "rail.gpkg":
+        rail = data
+        
 # plot the network, but do not show it or close it yet
 fig, ax = ox.plot_graph(
     G,
@@ -51,7 +99,7 @@ fig, ax = ox.plot_graph(
 )
 
 # to this matplotlib axis, add the place shape(s)
-gdf.plot(ax=ax, fc="k", ec="#666666", lw=1, alpha=1, zorder=-1)
+boundary.plot(ax=ax, fc="k", ec="#666666", lw=1, alpha=1, zorder=-1)
 
 # optionally set up the axes extents
 # margin = 0.02
