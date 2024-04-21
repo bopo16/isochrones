@@ -8,7 +8,13 @@ from dotenv import load_dotenv
 import matplotlib.pyplot as plt
 import matplotlib
 from geopy.geocoders import Nominatim
-from traveltimepy import TravelTimeSdk, Coordinates, Range, PublicTransport, Transportation
+from traveltimepy import (
+    TravelTimeSdk,
+    Coordinates,
+    Range,
+    PublicTransport,
+    Transportation,
+)
 
 from download_data import data_dir, network_path, boundary_path
 
@@ -25,7 +31,8 @@ destination = "Central Station, Sydney, Australia"
 geolocator = Nominatim(user_agent="SydneyIsochrones")
 location = geolocator.geocode(destination)
 
-# traveltime sdf request
+
+# traveltime sdk request
 async def main():
     sdk = TravelTimeSdk(app_id, api_key)
 
@@ -50,6 +57,7 @@ async def main():
 
     return isochrones
 
+
 # run the traveltime async function and return list of isochrones
 isochrones = asyncio.run(main())
 
@@ -72,7 +80,7 @@ fig, ax = ox.plot_graph(
 boundary.plot(ax=ax, fc="lightgrey", ec="white", lw=1, alpha=1, zorder=-1)
 
 # get the colormap for the isochrones
-colors = matplotlib.colormaps['RdYlGn_r']
+colors = matplotlib.colormaps["RdYlGn_r"]
 
 for i, isochrone in enumerate(isochrones):
     # get the color as a tuple of RGBA values
@@ -82,8 +90,10 @@ for i, isochrone in enumerate(isochrones):
     hex_color = matplotlib.colors.to_hex(rgba_color)
 
     # plot the isochrone
-    isochrone.plot(ax=ax, fc=hex_color, ec=None, lw=1, alpha=1, zorder=(len(isochrones) - i))
-    
+    isochrone.plot(
+        ax=ax, fc=hex_color, ec=None, lw=1, alpha=1, zorder=(len(isochrones) - i)
+    )
+
 # plot station location on the map
 plt.scatter(location.longitude, location.latitude, color="red", zorder=100)
 
