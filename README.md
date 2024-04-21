@@ -12,7 +12,7 @@ This is all handled in `plot_data.py`
 > 
 > Created a similar version of `download_data.py` called `download_data_small.py`, which does the exact same thing but with a smaller network dataset (in this case, Parramatta, NSW). There is almost certainly a better way to do this, but for now it works pretty well for quickly iterating when testing stuff.
 > 
-> Begun work on incorporating the request(s) to TravelTime API as POST requests in a separate `requests.p`y file. This allows a bit more customisation compared to the Python SDK, and allows multiple isochrones to be requested at once. Not that I'm likely to get rate limited, but it does seem like the right path forward. I'm not really in the mood to copy the request for each iteration of travel_time, so it would be great to generate the json with [apple/pkl](https://github.com/apple/pkl) at some point.
+> Begun work on incorporating the request(s) to TravelTime API as POST requests in a separate `requests.p`y file. This allows a bit more customisation compared to the Python SDK, and allows multiple isochrones to be requested at once. Not that I'm likely to get rate limited, but it does seem like the right path forward. I'm not really in the mood to copy the request for each iteration of `travel_time`, so it would be great to generate the json with [apple/pkl](https://github.com/apple/pkl) at some point.
 > 
 > The other thing I'd like to do is download the isochrones to disk once I've configured them in a way I like so I can start working on the in GIS software. Could be good to add this if I shove this whole thing into a Jupyter notebook for others to use at some point.
 > 
