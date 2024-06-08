@@ -16,13 +16,16 @@ from traveltimepy import (
     Transportation,
 )
 
-from download_data import data_dir, network_path, boundary_path
+from download_data_small import data_dir, network_path, boundary_path
 
 # load environment variables from .env file
 load_dotenv()
 
 api_key = os.getenv("API_KEY")
 app_id = os.getenv("APP_ID")
+
+# define date and time
+date_time = "2024-06-07T09:30:00-10:00"
 
 # set destination location
 destination = "Central Station, Sydney, Australia"
@@ -43,7 +46,7 @@ async def main():
     for traveltime in [10, 20, 30, 45, 60, 90, 120]:
         results = await sdk.time_map_geojson_async(
             coordinates=[Coordinates(lat=location.latitude, lng=location.longitude)],
-            arrival_time="2024-04-22T09:30:00-10:00",
+            arrival_time=date_time,
             travel_time=(traveltime * 60),
             transportation=PublicTransport(walking_time=(traveltime * 60)),
             search_range=Range(enabled=True, width=(30 * 60)),
