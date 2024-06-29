@@ -19,7 +19,7 @@ from shapely.geometry import Polygon, MultiPolygon
 # ----------------------------------------------------------------------------
 # testing flags
 full_analysis = True
-generate_isochrones = True
+generate_isochrones = False
 download_data = False
 full_times = True
 
@@ -95,7 +95,7 @@ date_time = check_datetime("2024-06-29T09:30:00-10:00")
 
 # define the range of travel times
 if full_times:
-    times = [10, 20, 30, 45, 60, 90, 120]
+    times = [15, 30, 45, 60, 90]
 else:
     times = [10, 20, 30]
 
@@ -139,6 +139,7 @@ if generate_isochrones:
         print("Failed.", r.status_code)
         print(r.json())
         sys.exit(1)
+
 else:
     # load locally saved isochrones
     with open(f"{data_dir}/isochrones.geojson", "r") as f:
@@ -195,19 +196,19 @@ for idx, row in isochrone.iterrows():
         continue  # Skip non-Polygon/MultiPolygon geometries
 
     # plot contents of `polygons` and adjust colour and colour and zorder
-    for i, poly in enumerate(polygons):
+    for poly in enumerate(polygons):
         gdf = gpd.GeoDataFrame(index=[0], crs=isochrone.crs, geometry=[poly])
         gdf.plot(
             ax=ax,
             color=to_hex(color),
             edgecolor=None,
             alpha=0.8,
-            zorder=(len(isochrone) - i + 10),
+            zorder=(len(isochrone) - idx),
         )
 
 
 # plot station location on the map
-plt.scatter(location.longitude, location.latitude, color="red", zorder=100)
+plt.scatter(location.longitude, location.latitude, color="red", zorder=10)
 
 # show plot
 plt.show()
