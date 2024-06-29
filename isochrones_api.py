@@ -19,7 +19,7 @@ from shapely.geometry import Polygon, MultiPolygon
 # ----------------------------------------------------------------------------
 # testing flags
 full_analysis = True
-generate_isochrones = False
+generate_isochrones = True
 download_data = False
 full_times = True
 
@@ -196,14 +196,14 @@ for idx, row in isochrone.iterrows():
         continue  # Skip non-Polygon/MultiPolygon geometries
 
     # plot contents of `polygons` and adjust colour and colour and zorder
-    for poly in enumerate(polygons):
+    for i, poly in enumerate(polygons):
         gdf = gpd.GeoDataFrame(index=[0], crs=isochrone.crs, geometry=[poly])
         gdf.plot(
             ax=ax,
             color=to_hex(color),
             edgecolor=None,
             alpha=0.8,
-            zorder=(len(isochrone) - idx),
+            zorder=(len(isochrone) - i + 10), #TODO: Fix this. Should this be idx instead of i?
         )
 
 
